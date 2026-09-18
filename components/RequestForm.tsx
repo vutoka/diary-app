@@ -5,36 +5,35 @@ import { createClient } from "@/lib/supabase/client";
 import { useAutosave } from "@/lib/useAutosave";
 import SaveStatus from "@/components/SaveStatus";
 
-type DictionaryFormProps = {
+type RequestFormProps = {
   onAdded: () => void;
 };
 
-type Draft = { term: string; definition: string; category: string };
+type Draft = { title: string; description: string };
 
-const EMPTY: Draft = { term: "", definition: "", category: "" };
+const EMPTY: Draft = { title: "", description: "" };
 
-export default function DictionaryForm({ onAdded }: DictionaryFormProps) {
+export default function RequestForm({ onAdded }: RequestFormProps) {
   const [draft, setDraft] = useState<Draft>(EMPTY);
-  // Once the required fields are filled the term is created and later edits update it.
+  // Once the title is filled the request is created and later edits update it.
   const [createdId, setCreatedId] = useState<string | null>(null);
   const createdIdRef = useRef<string | null>(null);
 
   const { status, flush, reset } = useAutosave<Draft>({
     value: draft,
     initial: EMPTY,
-    isValid: (d) => d.term.trim() !== "" && d.definition.trim() !== "",
+    isValid: (d) => d.title.trim() !== "",
     onSaved: onAdded,
     save: async (d) => {
       const supabase = createClient();
       const row = {
-        term: d.term.trim(),
-        definition: d.definition.trim(),
-        category: d.category.trim() || null,
+        title: d.title.trim(),
+        description: d.description.trim() || null,
       };
 
       if (createdIdRef.current === null) {
         const { data, error } = await supabase
-          .from("dictionary_terms")
+          .from("requests")
           .insert(row)
           .select("id")
           .single();
@@ -43,7 +42,7 @@ export default function DictionaryForm({ onAdded }: DictionaryFormProps) {
         setCreatedId(data.id);
       } else {
         const { error } = await supabase
-          .from("dictionary_terms")
+          .from("requests")
           .update(row)
           .eq("id", createdIdRef.current);
         if (error) throw error;
@@ -66,29 +65,22 @@ export default function DictionaryForm({ onAdded }: DictionaryFormProps) {
       onSubmit={handleSubmit}
       className="space-y-3 rounded-lg border border-gray-200 bg-white p-4"
     >
-      <h2 className="text-sm font-semibold text-gray-900">Add a term</h2>
+      <h2 className="text-sm font-semibold text-gray-900">Request a feature</h2>
       <input
-        value={draft.term}
-        onChange={(e) => setDraft((d) => ({ ...d, term: e.target.value }))}
-        placeholder="Term"
+        value={draft.title}
+        onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
+        placeholder="Title"
         required
         className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
       />
       <textarea
-        value={draft.definition}
+        value={draft.description}
         onChange={(e) =>
-          setDraft((d) => ({ ...d, definition: e.target.value }))
+          setDraft((d) => ({ ...d, description: e.target.value }))
         }
-        placeholder="Definition"
-        required
-        rows={3}
+        placeholder="Description (optional)"
+        rows={4}
         className="w-full resize-y rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
-      />
-      <input
-        value={draft.category}
-        onChange={(e) => setDraft((d) => ({ ...d, category: e.target.value }))}
-        placeholder="Category (optional, e.g. React, Git, AWS)"
-        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
       />
       <div className="flex items-center gap-3">
         <button
@@ -100,7 +92,7 @@ export default function DictionaryForm({ onAdded }: DictionaryFormProps) {
             ? "Saving..."
             : createdId
               ? "Done"
-              : "Add term"}
+              : "Add request"}
         </button>
         <SaveStatus status={status} />
       </div>

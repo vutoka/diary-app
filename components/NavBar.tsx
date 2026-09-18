@@ -31,6 +31,9 @@ export default function NavBar() {
         <Link href="/dictionary" className={linkClass("/dictionary")}>
           Dictionary
         </Link>
+        <Link href="/requests" className={linkClass("/requests")}>
+          Requests
+        </Link>
       </div>
       <button
         onClick={handleLogout}

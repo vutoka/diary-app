@@ -5,6 +5,14 @@ export type Entry = {
   updated_at: string;
 };
 
+export type FeatureRequest = {
+  id: string;
+  title: string;
+  description: string | null;
+  status: "open" | "done";
+  created_at: string;
+};
+
 export type DictionaryTerm = {
   id: string;
   term: string;
