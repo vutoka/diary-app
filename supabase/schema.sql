@@ -49,3 +49,34 @@ create policy "own requests" on requests
 create index if not exists requests_user_created_idx on requests (user_id, created_at desc);
 create index if not exists entries_user_date_idx on entries (user_id, entry_date);
 create index if not exists dictionary_terms_user_term_idx on dictionary_terms (user_id, term);
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'entry-images',
+  'entry-images',
+  false,
+  5242880,
+  array['image/jpeg', 'image/png', 'image/webp']
+)
+on conflict (id) do nothing;
+
+create policy "read own entry images" on storage.objects
+  for select to authenticated
+  using (
+    bucket_id = 'entry-images'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+create policy "upload own entry images" on storage.objects
+  for insert to authenticated
+  with check (
+    bucket_id = 'entry-images'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+create policy "delete own entry images" on storage.objects
+  for delete to authenticated
+  using (
+    bucket_id = 'entry-images'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );

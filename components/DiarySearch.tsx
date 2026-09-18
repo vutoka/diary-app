@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatDisplayDate } from "@/lib/date";
+import { describeImageTokens } from "@/lib/imageTokens";
 
 type SearchResult = {
   entry_date: string;
@@ -70,7 +71,7 @@ export default function DiarySearch({ onSelectDate }: DiarySearchProps) {
                 {formatDisplayDate(r.entry_date)}
               </div>
               <div className="truncate text-xs text-gray-500">
-                {r.content}
+                {describeImageTokens(r.content)}
               </div>
             </button>
           ))}
